@@ -1,0 +1,25 @@
+# Python virtual environment
+ingestion/.venv/
+
+# Node / Angular
+node_modules/
+dist/
+out-tsc/
+
+# Docker volumes / persistent storage
+esdata/
+mongo_data/
+data/
+
+# Ingestion/output fajlovi
+ingestion/output/
+ingestion/tmp/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# HuggingFace cache
+~/.cache/huggingface/

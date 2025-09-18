@@ -1,0 +1,7 @@
+pandas
+kagglehub[pandas-datasets]
+pymongo
+elasticsearch
+googletrans==4.0.0rc1
+sentence-transformers
+pydantic
