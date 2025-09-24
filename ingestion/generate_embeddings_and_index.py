@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import torch
 from tqdm import tqdm
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -17,6 +18,36 @@ model_sr = SentenceTransformer("models/fashion-semantic-model-sr")
 
 tokenizer_en = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
 tokenizer_sr = AutoTokenizer.from_pretrained("sentence-transformers/distiluse-base-multilingual-cased-v2")
+
+def encode_long_texts(model, texts, tokenizer=None, max_len=512, stride=128, batch_size=32):
+    """
+    Sliding window encoding: deli tekstove na segmente sa preklapanjem.
+    """
+    embeddings = []
+    for start_idx in range(0, len(texts), batch_size):
+        batch_texts = texts[start_idx:start_idx+batch_size]
+        batch_embs = []
+        for text in batch_texts:
+            # Tokenizacija
+            tokens = tokenizer.encode(text) if tokenizer else None
+            if tokens and len(tokens) > max_len:
+                # Sliding window
+                seg_embs = []
+                for i in range(0, len(tokens), max_len - stride):
+                    seg_tokens = tokens[i:i+max_len]
+                    seg_text = tokenizer.decode(seg_tokens) if tokenizer else text
+                    seg_emb = model.encode([seg_text], convert_to_tensor=True, device=device)
+                    seg_embs.append(seg_emb)
+                seg_embs = torch.cat(seg_embs, dim=0)
+                # Pooling
+                seg_embs = torch.mean(seg_embs, dim=0, keepdim=True)
+                batch_embs.append(seg_embs)
+            else:
+                batch_embs.append(model.encode([text], convert_to_tensor=True, device=device))
+        batch_embs = torch.cat(batch_embs, dim=0)
+        embeddings.append(batch_embs)
+    return torch.cat(embeddings, dim=0)
+
 
 # --- Chunking helper ---
 def product_row_to_chunks(row, tokenizer, max_length=256, lang="en"):
