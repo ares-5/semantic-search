@@ -1,0 +1,7 @@
+<div class="max-w-4xl mx-auto p-4">
+  <app-search-bar (search)="onSearch($event)"></app-search-bar>
+  @if (loading) {
+    <div class="text-center py-4">Loading...</div>
+  }
+  <app-search-results [products]="products"></app-search-results>
+</div>

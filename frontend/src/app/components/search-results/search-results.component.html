@@ -1,0 +1,16 @@
+@if (products.length === 0) {
+    <div class="text-gray-500 p-4">
+    No results found.
+    </div>
+}
+
+@for (let product of products; track product._id) {
+    <div class="border p-4 rounded mb-2 shadow hover:shadow-lg transition">
+    <h2 class="font-bold text-lg">{{ product.title }}</h2>
+    <p class="text-gray-700">{{ product.description }}</p>
+    <div class="text-sm text-gray-500 mt-1">
+        Brand: {{ product.brand }} | Category: {{ product.sub_category }} | Seller: {{ product.seller }}
+    </div>
+    </div>
+}
+

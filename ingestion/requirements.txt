@@ -11,3 +11,4 @@ deep-translator
 elasticsearch>=8.0.0
 pymongo
 kagglehub
+transliterate

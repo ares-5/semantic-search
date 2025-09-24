@@ -1,5 +1,8 @@
 # Python virtual environment
 ingestion/.venv/
+ingestion/models_1st_epoch
+ingestion/models_2nd_epoch
+ingestion/models_last_epoch
 
 # Node / Angular
 node_modules/

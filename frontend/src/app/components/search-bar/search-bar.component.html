@@ -1,0 +1,14 @@
+<div class="flex items-center p-2">
+  <input
+    type="text"
+    [(ngModel)]="query"
+    placeholder="Search products..."
+    class="flex-1 p-2 border rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  <button
+    (click)="onSearch()"
+    class="ml-2 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+  >
+    Search
+  </button>
+</div>
