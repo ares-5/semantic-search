@@ -1,8 +1,10 @@
 # Python virtual environment
 ingestion/.venv/
-ingestion/models_1st_epoch
-ingestion/models_2nd_epoch
-ingestion/models_last_epoch
+ingestion/models
+ingestion/training/en/generated_queries_all.tsv
+
+ingestion/training/sr/generated_queries_all_sr.tsv
+ingestion/training/sr/generated_queries_all.tsv
 
 # Node / Angular
 node_modules/

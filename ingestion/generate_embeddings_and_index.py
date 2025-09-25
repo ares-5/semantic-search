@@ -1,105 +1,161 @@
 import json
+import uuid
 import pandas as pd
+import torch
 from tqdm import tqdm
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer
 from writers.mongo_writer import MongoDBWriter
 from writers.elastic_search_writer import ElasticSearchWriter
+import classla
+import nltk
+nltk.download('punkt')
+from nltk.tokenize import sent_tokenize
 
-# --- Load dataset ---
-translated_file_path = "flipkart_fashion_translated.json"
-df = pd.read_json(translated_file_path, orient="records", lines=True)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+nlp_sr = classla.Pipeline('sr', processors='tokenize', use_gpu=torch.cuda.is_available())
+
+# Load original PaSaz dataset (contains both en and sr abstracts)
+dataset = pd.read_json("/kaggle/input/pasaz/pasaz.json", orient="records", lines=True)
+df = dataset[["title_sr", "title_en", "abstract_en", "abstract_sr", "full_abstract"]]
+df = df[df["full_abstract"] == True].reset_index(drop=True)
 
 # --- Load trained models ---
-model_en = SentenceTransformer("models/fashion-semantic-model-en")
-model_sr = SentenceTransformer("models/fashion-semantic-model-sr")
+model_en = SentenceTransformer("/ingestion/models/search_model_en")
+#model_sr = SentenceTransformer("/ingestion/models/search_model_sr")
 
-tokenizer_en = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
-tokenizer_sr = AutoTokenizer.from_pretrained("sentence-transformers/distiluse-base-multilingual-cased-v2")
+tokenizer_en = AutoTokenizer.from_pretrained("sentence-transformers/msmarco-distilbert-base-dot-prod-v3")
+#tokenizer_sr = AutoTokenizer.from_pretrained("classla/bcms-bertic")
 
-# --- Chunking helper ---
-def product_row_to_chunks(row, tokenizer, max_length=256, lang="en"):
+def encode_texts(
+        model,
+        texts,
+        lang='en',
+        max_len=512,
+        batch_size=32,
+        device='cpu', 
+        nlp_sr=None):
     """
-    Split product info into chunks per field, each chunk <= max_length tokens.
+    Encode a list of texts into embeddings using sentence-level tokenization and pooling.
+    - lang: 'en' or 'sr'
+    - max_len: max tokens per block (model limit)
+    - batch_size: number of texts to process per iteration
     """
-    if lang == "en":
-        parts = {
-            "title": f"title: {row['title']}",
-            "description": f"description: {row['description']}",
-            "details": f"details: {', '.join([f'{list(d.keys())[0]}: {list(d.values())[0]}' for d in row['product_details']])}"
-        }
-    else:
-        parts = {
-            "title": f"title: {row['title_sr']}",
-            "description": f"description: {row['description_sr']}",
-            "details": f"details: {row['details_sr']}"
-        }
-
-    # common fields
-    parts.update({
-        "brand": f"brand: {row['brand']}",
-        "category": f"category: {row['sub_category']}",
-        "seller": f"seller: {row['seller']}"
-    })
-
-    chunks = {}
-    for key, text in parts.items():
-        tokens = tokenizer(text, add_special_tokens=True)["input_ids"]
-        chunk_list = [
-            tokenizer.decode(tokens[i:i+max_length], skip_special_tokens=True).strip()
-            for i in range(0, len(tokens), max_length)
-        ]
-        chunks[key] = chunk_list
-
-    return chunks
-
-# --- Encode products with pooling ---
-def encode_products(df, model, tokenizer, lang="en", batch_size=16):
     embeddings = []
-    for _, row in tqdm(df.iterrows(), total=len(df), desc=f"Encoding {lang}"):
-        chunks_dict = product_row_to_chunks(row, tokenizer, lang=lang)
-        all_chunks = [chunk for sublist in chunks_dict.values() for chunk in sublist]
-        if all_chunks:
-            chunk_embeddings = model.encode(all_chunks, batch_size=batch_size, show_progress_bar=False)
-            product_embedding = np.mean(chunk_embeddings, axis=0)  # mean pooling
-        else:
-            product_embedding = np.zeros(model.get_sentence_embedding_dimension())
-        embeddings.append(product_embedding)
-    return embeddings
+
+    for start_idx in range(0, len(texts), batch_size):
+        batch_texts = texts[start_idx:start_idx+batch_size]
+        batch_embs = []
+
+        for text in batch_texts:
+            # Sentence-level tokenization
+            if lang == 'en':
+                sentences = sent_tokenize(text)
+            elif lang == 'sr':
+                if nlp_sr is None:
+                    raise ValueError("nlp_sr pipeline must be provided for Serbian texts")
+                doc = nlp_sr(text)
+                sentences = [sent.text for sent in doc.sentences]
+            else:
+                raise ValueError("lang must be 'en' or 'sr'")
+
+            # Group sentences into blocks <= max_len tokens
+            blocks = []
+            current_block = ""
+            for sentence in sentences:
+                # Tokenize current block + new sentence
+                tokens = model.tokenize((current_block + " " + sentence).strip())
+                if len(tokens) <= max_len:
+                    current_block = (current_block + " " + sentence).strip()
+                else:
+                    if current_block:
+                        blocks.append(current_block)
+                    current_block = sentence
+            if current_block:
+                blocks.append(current_block)
+
+            # Encode each block
+            block_embs = []
+            for block in blocks:
+                emb = model.encode([block], convert_to_tensor=True, device=device)
+                block_embs.append(emb)
+
+            # Pooling: average block embeddings
+            text_emb = torch.mean(torch.stack(block_embs), dim=0)
+            batch_embs.append(text_emb)
+
+        # Stack batch embeddings
+        batch_embs = torch.stack(batch_embs)
+        embeddings.append(batch_embs)
+
+    return torch.cat(embeddings, dim=0)
 
 # --- Generate embeddings ---
-df["embedding_en"] = encode_products(df, model_en, tokenizer_en, lang="en")
-df["embedding_sr"] = encode_products(df, model_sr, tokenizer_sr, lang="sr")
+df["embedding_en"] = encode_texts(
+    model_en,
+    texts=(df["title_en"] + " " + df["abstract_en"]).tolist(),
+    lang = 'en',
+    max_len = 512,
+    batch_size = 32,
+    device = device,
+)
 
-# --- Save embeddings locally (optional) ---
+# df["embedding_sr"] = encode_texts(
+#     model=model_sr,
+#     texts=(df["title_sr"] + " " + df["abstract_sr"]).tolist(),
+#     lang='sr',
+#     max_len=512,
+#     batch_size=32,
+#     device=device,
+#     nlp_sr=nlp_sr
+# )
+
+# --- Save embeddings locally ---
 with open("embeddings_en.jsonl", "w", encoding="utf-8") as f:
     for row in df.itertuples():
-        f.write(json.dumps({"text": row.title + " " + row.description, "embedding": row.embedding_en.tolist()}, ensure_ascii=False) + "\n")
+        f.write(json.dumps({
+            "text": row.title_en + " " + row.abstract_en,
+            "embedding": row.embedding_en.tolist()
+        }, ensure_ascii=False) + "\n")
 
-with open("embeddings_sr.jsonl", "w", encoding="utf-8") as f:
-    for row in df.itertuples():
-        f.write(json.dumps({"text": row.title_sr + " " + row.description_sr, "embedding": row.embedding_sr.tolist()}, ensure_ascii=False) + "\n")
+#with open("embeddings_sr.jsonl", "w", encoding="utf-8") as f:
+#    for row in df.itertuples():
+#        f.write(json.dumps({
+#           "text": row.title_sr + " " + row.abstract_sr,
+#            "embedding": row.embedding_sr.tolist()
+#        }, ensure_ascii=False) + "\n")
 
 # --- Insert into MongoDB ---
+if "_id" not in df.columns:
+    df["_id"] = [str(uuid.uuid4()) for _ in range(len(df))]
+
 mongo_writer = MongoDBWriter()
 df = mongo_writer.insert_docs(df)
 
 # --- Insert into Elasticsearch ---
 es_writer = ElasticSearchWriter(
     embedding_dim_en=len(df["embedding_en"][0]),
-    embedding_dim_sr=len(df["embedding_sr"][0])
+    #embedding_dim_sr=len(df["embedding_sr"][0]) if "embedding_sr" in df.columns else None
 )
 
-# Vector indices
-es_writer.insert_docs(df, index_name="products_en_vector", embedding_col="embedding_en")
-es_writer.insert_docs(df, index_name="products_sr_vector", embedding_col="embedding_sr")
+# Mapping columns for text indices
+text_cols_en = {
+    "title": "title_en",
+    "details": "abstract_en"
+}
+text_cols_sr = {
+    "title": "title_sr",
+    "details": "abstract_sr"
+}
 
-# Inverted text indices
-text_cols_en = {"title": "title", "description": "description", "details": "product_details",
-                "brand": "brand", "category": "sub_category", "seller": "seller"}
-text_cols_sr = {"title": "title_sr", "description": "description_sr", "details": "details_sr",
-                "brand": "brand", "category": "sub_category", "seller": "seller"}
+# Insert vector embeddings
+es_writer.insert_docs(df, lang="en", embedding_col="embedding_en")
+#es_writer.insert_docs(df, lang="sr", embedding_col="embedding_sr")
 
-es_writer.insert_docs(df, index_name="products_en", text_cols=text_cols_en)
-es_writer.insert_docs(df, index_name="products_sr", text_cols=text_cols_sr)
+# Insert BM25 text indices
+es_writer.insert_docs(df, lang="en")
+#es_writer.insert_docs(df, lang="sr")
+
+print("Completed insertion of embeddings and BM25 text indices.")

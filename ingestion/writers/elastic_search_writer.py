@@ -10,7 +10,7 @@ class ElasticSearchWriter:
         # Dense vector indices
         for lang, dim in [("en", embedding_dim_en), ("sr", embedding_dim_sr)]:
             self.es.indices.create(
-                index=f"products_{lang}_vector",
+                index=f"phd_dissertations_{lang}_vector",
                 body={
                     "mappings": {
                         "properties": {
@@ -28,50 +28,42 @@ class ElasticSearchWriter:
                 ignore=400
             )
 
-        # Classical text indices
+        # BM25 text indices
         for lang in ["en", "sr"]:
             self.es.indices.create(
-                index=f"products_{lang}",
+                index=f"phd_dissertations_{lang}",
                 body={
                     "mappings": {
                         "properties": {
                             "_id": {"type": "keyword"},
                             "title": {"type": "text"},
-                            "description": {"type": "text"},
-                            "details": {"type": "text"},
-                            "brand": {"type": "keyword"},
-                            "category": {"type": "keyword"},
-                            "seller": {"type": "keyword"}
+                            "details": {"type": "text"}
                         }
                     }
                 },
                 ignore=400
             )
 
-    def insert_docs(self, df, index_name, embedding_col=None, text_cols=None, batch_size=500):
+    def insert_docs(self, df, lang, embedding_col=None, batch_size=500):
         """
         Insert documents into Elasticsearch using Mongo _id.
         """
         if "_id" not in df.columns:
             raise ValueError("DataFrame must have '_id' column for ES insertion.")
 
+        index_vector = f"phd_dissertations_{lang}_vector" if embedding_col else None
+        index_text = f"phd_dissertations_{lang}" if not embedding_col else None
+
         actions = []
-
-        for i, row in tqdm(df.iterrows(), total=len(df), desc=f"Inserting into {index_name}"):
+        for i, row in tqdm(df.iterrows(), total=len(df), desc=f"Inserting {lang}"):
             doc = {"_id": row["_id"]}
-
-            if text_cols:
-                for es_field, df_col in text_cols.items():
-                    value = row[df_col]
-                    # Flatten lists (e.g., product_details) into string
-                    if isinstance(value, list):
-                        value = ", ".join([str(v) if not isinstance(v, dict) else ", ".join(f"{k}: {v}" for k, v in v.items()) for v in value])
-                    doc[es_field] = value
-
             if embedding_col:
                 doc["embedding"] = row[embedding_col]
-
-            actions.append({"_index": index_name, "_id": row["_id"], "_source": doc})
+                actions.append({"_index": index_vector, "_id": row["_id"], "_source": doc})
+            else:
+                doc["title"] = row[f"title_{lang}"]
+                doc["details"] = row[f"abstract_{lang}"]
+                actions.append({"_index": index_text, "_id": row["_id"], "_source": doc})
 
             if len(actions) >= batch_size:
                 helpers.bulk(self.es, actions)
@@ -79,3 +71,4 @@ class ElasticSearchWriter:
 
         if actions:
             helpers.bulk(self.es, actions)
+
