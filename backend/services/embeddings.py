@@ -6,15 +6,16 @@ model_en = SentenceTransformer(config.EN_MODEL_PATH, local_files_only=True)
 model_sr = SentenceTransformer(config.SR_MODEL_PATH, local_files_only=True)
 
 def normalize(vec: np.ndarray) -> np.ndarray:
+    """Normalize a vector to unit length."""
     norm = np.linalg.norm(vec)
-    if norm == 0:
-        return vec
-    return vec / norm
+    if norm > 0:
+        return vec / norm
+    return vec
 
 def get_embedding(query: str, lang: str = "en") -> list[float]:
     model = model_en if lang == "en" else model_sr
-    emb = model.encode([query], normalize_embeddings=False)[0]
-    emb = emb / np.linalg.norm(emb)
+    emb = model.encode([query], convert_to_numpy=True, normalize_embeddings=True)[0]
+    emb = normalize(emb)
     print("Norm of embedding:", np.linalg.norm(emb))
     return emb.tolist()
 

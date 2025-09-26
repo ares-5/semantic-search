@@ -66,15 +66,6 @@ class ElasticSearchWriter:
                 if embedding_col:
                     emb = np.array(row[embedding_col], dtype=np.float32)
 
-                    norm = np.linalg.norm(emb)
-                    if norm == 0:
-                        invalid_rows.append(row["_id"])
-                        print(f"Zero-norm embedding for row {row['_id']}, skipping.")
-                        continue
-                    if not np.isclose(norm, 1.0, atol=1e-5):
-                        emb = emb / norm  # normalizujemo na jedinicni vektor
-                        print(f"Normalized embedding for row {row['_id']}, norm before: {norm:.4f}")
-
                     if emb.shape[0] != len(df[embedding_col][0]) or np.isnan(emb).any():
                         invalid_rows.append(row["_id"])
                         print(f"Invalid embedding for row {row['_id']}")
