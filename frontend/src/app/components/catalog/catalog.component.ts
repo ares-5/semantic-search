@@ -1,27 +1,28 @@
 import { ChangeDetectionStrategy, Component, inject, signal, WritableSignal } from '@angular/core';
-import { Product } from '../../core/models/product';
 import { SearchService } from '../../core/services/search.service';
-import { SearchResultsComponent } from '../search-results/search-results.component';
+import { PhDDissertation } from '../../core/models/phd-dissertation';
+import { SearchResultsComponent } from "../search-results/search-results.component";
+import { SearchBarComponent } from "../search-bar/search-bar.component";
 
 @Component({
   selector: 'app-catalog',
-  imports: [SearchResultsComponent],
-  template: './catalog.component.html',
-  styleUrl: './catalog.component.css',
+  imports: [SearchResultsComponent, SearchBarComponent],
+  templateUrl: './catalog.component.html',
+  styleUrls: ['./catalog.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CatalogComponent {
   private searchService: SearchService = inject(SearchService);
 
-  products: WritableSignal<Product[]> = signal([]);
+  phdDissertations: WritableSignal<PhDDissertation[]> = signal([]);
   loading: boolean = false;
 
   onSearch(query: string) {
     this.loading = true;
 
     this.searchService.search(query).subscribe({
-      next: (res: Product[]) => {
-        this.products.set(res);
+      next: (res: PhDDissertation[]) => {
+        this.phdDissertations.set(res);
         this.loading = false;
       },
       error: (err) => {

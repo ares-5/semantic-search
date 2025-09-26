@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from "../../../../node_modules/@angular/router/router_module.d-Bx9ArA6K";
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-layout',

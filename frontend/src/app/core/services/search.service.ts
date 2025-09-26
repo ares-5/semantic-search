@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { SearchMode } from '../models/search-mode';
-import { Product } from '../models/product';
+import { PhDDissertation } from '../models/phd-dissertation';
 
 @Injectable({
   providedIn: 'root'
@@ -13,14 +13,16 @@ export class SearchService {
 
   search(
     query: string,
-    mode: SearchMode = SearchMode.STANDARD,
-    lang: string = 'en',
+    mode: SearchMode = SearchMode.SEMANTIC,
+    lang: string = 'sr',
     size: number = 10,
     alpha: number = 0.5
-  ): Observable<Product[]> {
-    return this.httpClient.get<Product[]>(`${this.apiUrl}/search/`, {
+  ): Observable<PhDDissertation[]> {
+    const encodedQuery = encodeURIComponent(query);
+
+    return this.httpClient.get<PhDDissertation[]>(`${this.apiUrl}/search`, {
       params: {
-        query,
+        query: encodedQuery,
         mode,
         lang,
         size: size.toString(),
