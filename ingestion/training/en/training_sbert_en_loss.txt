@@ -1,5 +1,4 @@
 Using device: cuda
-/kaggle/input/queries/generated_queries_all (3).tsv already exists, skipping generation.
 Loaded training pairs: 35603
  [3339/3339 47:33, Epoch 3/3]
 Step	Training Loss

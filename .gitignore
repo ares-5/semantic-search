@@ -6,6 +6,10 @@ ingestion/training/en/generated_queries_all.tsv
 ingestion/training/sr/generated_queries_all_sr.tsv
 ingestion/training/sr/generated_queries_all.tsv
 
+ingestion/models.zip
+
+backend/services/phd_dissertation_models
+
 # Node / Angular
 node_modules/
 dist/

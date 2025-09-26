@@ -1,10 +1,6 @@
 # Korpus Paralelnih Sažetaka doktorskih disertacija na srpskom i engleskom jeziku
 # https://huggingface.co/datasets/jerteh/PaSaz
 
-# Osim toga, kvalitet dobijenih rešenja znatno je premašio rezultate iz 
-# literature
-# 207425 - obrisi empty line
-
 import os
 from tqdm import tqdm
 import torch

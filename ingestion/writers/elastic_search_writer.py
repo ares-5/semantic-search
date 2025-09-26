@@ -1,74 +1,107 @@
 from elasticsearch import Elasticsearch, helpers
+import numpy as np
 from tqdm import tqdm
+import traceback
 
 class ElasticSearchWriter:
     def __init__(self, es_host="http://localhost:9200", embedding_dim_en=None, embedding_dim_sr=None):
         self.es = Elasticsearch(es_host)
-        self.create_indices(embedding_dim_en, embedding_dim_sr)
+        self.embedding_dim_en = embedding_dim_en
+        self.embedding_dim_sr = embedding_dim_sr
+        self.create_indices()
 
-    def create_indices(self, embedding_dim_en, embedding_dim_sr):
+    def drop_index(self, index_name):
+        try:
+            if self.es.indices.exists(index=index_name, allow_no_indices=True):
+                self.es.indices.delete(index=index_name, ignore=[400, 404])
+                print(f"Dropped existing Elasticsearch index '{index_name}'.")
+        except Exception as e:
+            print(f"Error dropping index '{index_name}': {e}")
+
+    def create_indices(self):
         # Dense vector indices
-        for lang, dim in [("en", embedding_dim_en), ("sr", embedding_dim_sr)]:
+        for lang, dim in [("en", self.embedding_dim_en), ("sr", self.embedding_dim_sr)]:
+            if dim is None:
+                continue
+            index_name = f"phd_dissertations_{lang}_vector"
+            self.drop_index(index_name)
             self.es.indices.create(
-                index=f"phd_dissertations_{lang}_vector",
+                index=index_name,
                 body={
                     "mappings": {
                         "properties": {
-                            "_id": {
-                                "type": "keyword"
-                            },
-                            "embedding": {
-                                "type": "dense_vector",
-                                "dims": dim,
-                                "similarity": "dot_product"
-                            }
+                            "embedding": {"type": "dense_vector", "dims": dim, "similarity": "dot_product"}#, "similarity": "dot_product"}
                         }
                     }
-                },
-                ignore=400
+                }
             )
 
         # BM25 text indices
         for lang in ["en", "sr"]:
+            index_name = f"phd_dissertations_{lang}"
+            self.drop_index(index_name)
             self.es.indices.create(
-                index=f"phd_dissertations_{lang}",
+                index=index_name,
                 body={
                     "mappings": {
                         "properties": {
-                            "_id": {"type": "keyword"},
                             "title": {"type": "text"},
                             "details": {"type": "text"}
                         }
                     }
-                },
-                ignore=400
+                }
             )
 
     def insert_docs(self, df, lang, embedding_col=None, batch_size=500):
-        """
-        Insert documents into Elasticsearch using Mongo _id.
-        """
         if "_id" not in df.columns:
             raise ValueError("DataFrame must have '_id' column for ES insertion.")
 
-        index_vector = f"phd_dissertations_{lang}_vector" if embedding_col else None
-        index_text = f"phd_dissertations_{lang}" if not embedding_col else None
-
+        index_name = f"phd_dissertations_{lang}_vector" if embedding_col else f"phd_dissertations_{lang}"
         actions = []
-        for i, row in tqdm(df.iterrows(), total=len(df), desc=f"Inserting {lang}"):
-            doc = {"_id": row["_id"]}
-            if embedding_col:
-                doc["embedding"] = row[embedding_col]
-                actions.append({"_index": index_vector, "_id": row["_id"], "_source": doc})
-            else:
-                doc["title"] = row[f"title_{lang}"]
-                doc["details"] = row[f"abstract_{lang}"]
-                actions.append({"_index": index_text, "_id": row["_id"], "_source": doc})
+        invalid_rows = []
 
-            if len(actions) >= batch_size:
-                helpers.bulk(self.es, actions)
-                actions = []
+        for _, row in tqdm(df.iterrows(), total=len(df), desc=f"Inserting {lang}"):
+            doc = {}
+            try:
+                if embedding_col:
+                    emb = np.array(row[embedding_col], dtype=np.float32)
+
+                    norm = np.linalg.norm(emb)
+                    if norm == 0:
+                        invalid_rows.append(row["_id"])
+                        print(f"Zero-norm embedding for row {row['_id']}, skipping.")
+                        continue
+                    if not np.isclose(norm, 1.0, atol=1e-5):
+                        emb = emb / norm  # normalizujemo na jedinicni vektor
+                        print(f"Normalized embedding for row {row['_id']}, norm before: {norm:.4f}")
+
+                    if emb.shape[0] != len(df[embedding_col][0]) or np.isnan(emb).any():
+                        invalid_rows.append(row["_id"])
+                        print(f"Invalid embedding for row {row['_id']}")
+                        continue
+
+                    doc["embedding"] = emb.tolist()
+                else:
+                    doc["title"] = row[f"title_{lang}"]
+                    doc["details"] = row[f"abstract_{lang}"]
+
+                actions.append({"_index": index_name, "_id": row["_id"], "_source": doc})
+
+                if len(actions) >= batch_size:
+                    success, failed = helpers.bulk(self.es, actions, raise_on_error=False, stats_only=False)
+                    for f in failed:
+                        print(f"Failed document: {f}")
+                    actions = []
+            except Exception as e:
+                invalid_rows.append(row["_id"])
+                print(f"Exception inserting row {row['_id']}: {e}")
+                print(traceback.format_exc())
+                continue
 
         if actions:
-            helpers.bulk(self.es, actions)
+            success, failed = helpers.bulk(self.es, actions, raise_on_error=False, stats_only=False)
+            for f in failed:
+                print(f"Failed document: {f}")
 
+        if invalid_rows:
+            print(f"Skipped {len(invalid_rows)} invalid rows for {lang}: {invalid_rows[:10]}...")
