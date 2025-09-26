@@ -16,22 +16,28 @@ def standard_search(query, lang = "en", size = 10):
         }
     }
 
-    return es.search(index=f"products_{lang}", body = body, size = size)
+    return es.search(index=f"phd_dissertations_{lang}", body = body, size = size)
 
-def semantic_search(embedding, lang = "en", size = 10):
+def semantic_search(embedding, lang="en", size=10):
     """
-    Performs search in dense vector using KNN algorithm
+    Performs semantic search using dotProduct similarity via script_score
     """
     body = {
-        "knn": {
-            "field": "embedding",
-            "query_vector": embedding,
-            "k": size,
-            "num_candidates": 200
+        "size": size,
+        "query": {
+            "script_score": {
+                "query": { "match_all": {} },
+                "script": {
+                    "source": "dotProduct(params.query_vector, 'embedding') + 1.0",
+                    "params": {
+                        "query_vector": embedding
+                    }
+                }
+            }
         }
     }
 
-    return es.search(index=f"products_{lang}_vector", body = body, size = size)
+    return es.search(index=f"phd_dissertations_{lang}_vector", body=body)
 
 def hybrid_search(q, embedding, lang="en", size=10, alpha=0.5):
     """
@@ -52,7 +58,7 @@ def hybrid_search(q, embedding, lang="en", size=10, alpha=0.5):
 
     for hit in semantic_search_result["hits"]["hits"]:
         pid = hit["_id"]
-        score = hit["_score"] or 0  #cosine similarity embedding score
+        score = hit["_score"] or 0
         if pid not in scores:
             scores[pid] = 0
         scores[pid] += alpha * score
@@ -62,3 +68,24 @@ def hybrid_search(q, embedding, lang="en", size=10, alpha=0.5):
     ids = [pid for pid, _ in ranked]
 
     return ids
+
+def index_count(lang: str, vector: bool = False) -> int:
+    """
+    Returns the number of documents in the Elasticsearch index.
+    """
+    # Ensure lang is valid
+    if lang not in ("en", "sr"):
+        return 0
+
+    index = f"phd_dissertations_{lang}_vector" if vector else f"phd_dissertations_{lang}"
+
+    # indices.exists expects a string or list of strings
+    try:
+        if not es.indices.exists(index=index):
+            return 0
+        count = es.count(index=index)["count"]
+        return count
+    except Exception as e:
+        print(f"Error accessing index '{index}': {e}")
+        return 0
+

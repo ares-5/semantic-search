@@ -11,7 +11,7 @@ def search_products(
     mode: SearchMode = Query(SearchMode.STANDARD, description = "Search mode"),
     size: int = 10,
     alpha: float = 0.5
-):
+) -> list:
     if mode == SearchMode.STANDARD:
         es_results = elastic_search_service.standard_search(query, lang, size)
         ids = [hit["_id"] for hit in es_results["hits"]["hits"]]
@@ -28,8 +28,15 @@ def search_products(
     else:
         raise HTTPException(status_code=400, detail = "Invalid search mode")
     
-    results = list(mongo_service.get_products_by_ids(ids))
+    results = list(mongo_service.get_dissertations_by_ids(ids))
     for r in results:
         r["_id"] = str(r["_id"])
 
     return results
+
+@router.get("/index-count")
+def get_index_count(
+    lang: str = Query("en", description="Language: en | sr"),
+    vector: bool = Query(False)
+) -> int:
+    return elastic_search_service.index_count(lang, vector)

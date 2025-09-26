@@ -3,3 +3,8 @@ uvicorn[standard]
 pymongo
 elasticsearch
 sentence-transformers
+classla
+nltk
+transformers>=4.30.0
+numpy
+torch>=2.0.0
