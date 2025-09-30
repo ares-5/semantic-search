@@ -24,6 +24,18 @@ df = df[df["full_abstract"]].reset_index(drop=True)
 df["embedding_en"] = list(emb_en[:len(df)])
 df["embedding_sr"] = list(emb_sr[:len(df)])
 
+# At dataframe creation time
+print("Number of dissertations in df:", len(df))
+print("EN shape:", emb_en.shape)
+print("SR shape:", emb_sr.shape)
+emb_en = emb_en[:len(df)]
+emb_sr = emb_sr[:len(df)]
+print("EN shape:", emb_en.shape)
+print("SR shape:", emb_sr.shape)
+
+print("embedding_en length:", len(df["embedding_en"].iloc[0]))
+print("First 5 values of first embedding:", df["embedding_en"].iloc[0][:5])
+
 # --- Assign unique IDs if not present ---
 if "_id" not in df.columns:
     df["_id"] = [str(uuid.uuid4()) for _ in range(len(df))]

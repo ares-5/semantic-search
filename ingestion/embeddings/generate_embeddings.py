@@ -7,25 +7,14 @@ from sentence_transformers import SentenceTransformer
 import nltk
 import classla
 from nltk.tokenize import sent_tokenize
-import shutil
 
 DATA_JSONL = "hf://datasets/jerteh/PaSaz/PaSaz.jsonl"
-MODEL_EN_PATH = "/kaggle/input/en_model_final/transformers/default/1"
-MODEL_SR_PATH = "/kaggle/input/search-model-sr/transformers/default/1"
+MODEL_EN_PATH = "/kaggle/input/search_models/transformers/default/1/search_model_en"
+MODEL_SR_PATH = "/kaggle/input/search_models/transformers/default/1/search_model_sr"
 CLASLA_DIR = "/kaggle/input/classla/classla_resources"
 
-EMB_FILE_EN = "/kaggle/input/embeddings/embeddings_en_v2.npy"
-EMB_FILE_SR = "/kaggle/input/embeddings/embeddings_sr_v2.npy"
-
-dst_emb_en = "/kaggle/working/embeddings_en.npy"
-dst_emb_sr = "/kaggle/working/embeddings_sr.npy"
-
-if not os.path.exists(dst_emb_en):
-    shutil.copy(src_emb_en, dst_emb_en)
-if not os.path.exists(dst_emb_sr):
-    shutil.copy(src_emb_sr, dst_emb_sr)
-
-print("Embeddings copied to working directory and ready for continuation.")
+dst_emb_en = "/kaggle/working/embeddings_en_final.npy"
+dst_emb_sr = "/kaggle/working/embeddings_sr_final.npy"
 
 CHECKPOINT_FILE = "/kaggle/working/checkpoint.json"
 BATCH_SIZE_DOCS = 64
@@ -123,7 +112,7 @@ emb_en = np.load(dst_emb_en) if os.path.exists(dst_emb_en) else np.zeros((0, mod
 emb_sr = np.load(dst_emb_sr) if os.path.exists(dst_emb_sr) else np.zeros((0, model_sr.get_sentence_embedding_dimension()), dtype=np.float32)
 
 for i in range(start_idx, n_docs, BATCH_SIZE_DOCS):
-    batch_texts_en = (df["title_en"] + " " + df["abstract_en"]).tolist()[i:i+BATCH_SIZE_DOCS]
+    batch_texts_en = (df["title_en"].fillna("") + " " + df["abstract_en"].fillna("")).tolist()[i:i+BATCH_SIZE_DOCS]
     batch_texts_sr = (df["title_sr"] + " " + df["abstract_sr"]).tolist()[i:i+BATCH_SIZE_DOCS]
 
     t0 = time.perf_counter()
