@@ -13,10 +13,11 @@ export class SearchService {
 
   search(
     query: string,
-    mode: SearchMode = SearchMode.SEMANTIC,
-    lang: string = 'sr',
+    lang: 'en' | 'sr' = 'en',
+    mode: SearchMode = SearchMode.RERANKED,
     size: number = 10,
-    alpha: number = 0.5
+    candidate_pool: number = 400,
+    alpha: number = 0.65
   ): Observable<PhDDissertation[]> {
     const encodedQuery = encodeURIComponent(query);
 
@@ -26,8 +27,13 @@ export class SearchService {
         mode,
         lang,
         size: size.toString(),
-        alpha: alpha.toString()
+        candidate_pool: candidate_pool,
+        alpha: alpha
       }
     });
+  }
+
+  getById(id: string): Observable<PhDDissertation> {
+    return this.httpClient.get<PhDDissertation>(`${this.apiUrl}/dissertations/${id}`);
   }
 }

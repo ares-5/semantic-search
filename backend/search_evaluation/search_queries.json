@@ -1,0 +1,12 @@
+[
+  {
+    "query": "how is diabetes related to obesity",
+    "lang": "en",
+    "relevant_ids": ["93f8bfb8-69a5-4c80-be95-0d71bec4882c"]
+  },
+  {
+    "query": "testosterone level decrease with aging influencing cvd and ami",
+    "lang": "en",
+    "relevant_ids": ["7f497abb-2cef-4a92-bdb9-46b5047519df"]
+  }
+]

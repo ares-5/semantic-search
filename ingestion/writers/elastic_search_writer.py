@@ -30,7 +30,7 @@ class ElasticSearchWriter:
                 body={
                     "mappings": {
                         "properties": {
-                            "embedding": {"type": "dense_vector", "dims": dim, "similarity": "dot_product"}#, "similarity": "dot_product"}
+                            "embedding": {"type": "dense_vector", "dims": dim, "similarity": "dot_product"}
                         }
                     }
                 }

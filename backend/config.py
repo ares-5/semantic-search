@@ -6,5 +6,6 @@ MONGO_COLLECTION = "phd_dissertations"
 
 ES_HOST = "http://localhost:9200"
 
+
 EN_MODEL_PATH = "services/phd_dissertation_models/search_model_en"
 SR_MODEL_PATH = "services/phd_dissertation_models/search_model_sr"

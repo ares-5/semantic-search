@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
-import { CatalogComponent } from './components/catalog/catalog.component';
 import { LayoutComponent } from './components/layout/layout.component';
+import { SearchResultsComponent } from './components/search-results/search-results.component';
+import { PhdDissertationComponent } from './components/phd-dissertation/phd-dissertation.component';
 
 export const routes: Routes = [
     {
@@ -9,7 +10,11 @@ export const routes: Routes = [
         children: [
             {
                 path: '',
-                component: CatalogComponent
+                component: SearchResultsComponent,
+            },
+            {
+                path: 'dissertation/:id',
+                component: PhdDissertationComponent
             }
         ]
     }

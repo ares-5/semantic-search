@@ -4,3 +4,4 @@ class SearchMode(str, Enum):
     STANDARD = "standard"
     SEMANTIC = "semantic"
     HYBRID = "hybrid"
+    RERANKED = "reranked"

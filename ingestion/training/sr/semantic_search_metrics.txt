@@ -1,0 +1,9 @@
+*V1 model
+Calculating metrics: 100%|██████████| 7130/7130 [00:01<00:00, 5544.35it/s]
+Evaluation complete! Metrics saved to /kaggle/working/semantic_search_metrics_sr_v1.txt
+Recall@1: 0.2251, Recall@5: 0.4610, Recall@10: 0.5679, MRR: 0.3389
+
+*Final model
+Calculating metrics: 100%|██████████| 7130/7130 [00:01<00:00, 5679.23it/s]
+Evaluation complete! Metrics saved to /kaggle/working/semantic_search_metrics_sr.txt
+Recall@1: 0.7792, Recall@5: 0.9544, Recall@10: 0.9820, MRR: 0.8550

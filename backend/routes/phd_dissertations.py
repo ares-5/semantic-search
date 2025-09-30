@@ -5,10 +5,17 @@ from models.phd_dissertation import PhdDissertation
 
 router = APIRouter()
 
+@router.get("/{id}", response_model=PhdDissertation)
+def get_dissertation_by_id(id: str):
+    dissertation = mongo_service.get_dissertation_by_id(dissertation_id=id)
+    if not dissertation:
+        raise HTTPException(status_code=404, detail="PhD dissertation not found")
+
+    return dissertation
+
 @router.post("/by_ids", response_model=list[PhdDissertation])
 def get_dissertations_by_ids(
-    dissertation_ids: List[str] = Body(..., embed=True),
-    lang: str = "en"
+    dissertation_ids: List[str] = Body(..., embed=True)
 ):
     dissertations = mongo_service.get_dissertations_by_ids(dissertation_ids)
     if not dissertations:
