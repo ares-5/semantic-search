@@ -4,7 +4,7 @@ from services import elastic_search_service, mongo_service
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("")
 def search_products(
     query: str = Query(..., description = "Search query"),
     lang: str = Query("en", description = "Language: en | sr"),

@@ -1,12 +1,85 @@
 [
   {
-    "query": "how is diabetes related to obesity",
+    "query": "walking of subjects after stroke or heart attack",
     "lang": "en",
-    "relevant_ids": ["93f8bfb8-69a5-4c80-be95-0d71bec4882c"]
+    "relevant_ids": [
+      "0920633d-d8fb-4cbd-affc-b3e86fa41c0a",
+      "0e9fa82f-452a-40e6-ab14-f2998177c455", 
+      "18f5dc55-d49e-4f94-9e58-3fd81cfb126b",
+      "3a3e3c18-b002-4745-87cf-185d90fe0c43",
+      "57a330e4-a0f9-4f6d-a6da-2a24ea0debc7",
+      "c444ebec-ae1d-4005-b24a-97bad111cca2",
+      "e9a9530c-4036-4d98-ba4b-e0f0b7d487a2",
+      "fd09fd0e-60b9-451e-a2c5-c58e679dd347"
+    ]
   },
   {
-    "query": "testosterone level decrease with aging influencing cvd and ami",
+    "query": "genetic mutations associated with cancer progression",
     "lang": "en",
-    "relevant_ids": ["7f497abb-2cef-4a92-bdb9-46b5047519df"]
+    "relevant_ids": [
+      "144e6989-fca2-4291-beff-73f428a4ae45",
+      "1896dd42-95c4-48d0-af12-06b571d515fa",
+      "26112f85-1f16-463d-b0d9-fbb42d2d49d5",
+      "44f5f768-2cf7-490c-96a3-00ff7195bd87",
+      "60856c25-f079-4212-bf22-97d87203270b",
+      "6b62a7fe-236c-47e8-a2c4-935f9628f8fd",
+      "7914d0df-f807-479b-859f-0affa51cb2fd",
+      "e90153d9-2fbf-4add-b4c4-fd801e490f79",
+      "fc50f683-e237-4f2f-a4e4-3d4d09abb97a"
+    ]   
+  },
+  {
+    "query": "designs of modern buildings in Belgrade",
+    "lang": "en",
+    "relevant_ids": [
+      "15b1b998-f9eb-4eeb-be1f-c68e49d08fda",
+      "3d48bff8-1637-481c-80d8-b0acf49bed65",
+      "668c9043-5723-47f8-be75-055c5172dc8a",
+      "806ef455-2800-45c8-87ca-f4c815339cf8",
+      "aa560c64-d7a0-4cab-97a9-d52cc5a6236b",
+      "b3bf8cf1-4f95-4d0b-b2dd-094ad1dfcee0",
+      "e0dccb91-d717-4d0c-a75e-e1a1363805b4"
+    ]
+  },
+    {
+    "query": "Kretanje osoba nakon moždanog ili srčanog udara",
+    "lang": "sr",
+    "relevant_ids": [
+      "0920633d-d8fb-4cbd-affc-b3e86fa41c0a",
+      "18f5dc55-d49e-4f94-9e58-3fd81cfb126b", 
+      "340d292c-af1d-4c84-a97d-f6dd16d5c911",
+      "57a330e4-a0f9-4f6d-a6da-2a24ea0debc7",
+      "e9a9530c-4036-4d98-ba4b-e0f0b7d487a2",
+      "fd09fd0e-60b9-451e-a2c5-c58e679dd347",
+      "0e9fa82f-452a-40e6-ab14-f2998177c455"
+    ]
+  },
+  {
+    "query": "genetske mutacije povezane sa progresijom kancera",
+    "lang": "sr",
+    "relevant_ids": [
+      "26112f85-1f16-463d-b0d9-fbb42d2d49d5",
+      "7914d0df-f807-479b-859f-0affa51cb2fd",
+      "a8e0e941-e9e0-4eea-83fb-1eaa88834766",
+      "be226886-74e4-4f6a-b030-c1e0c682f9f3",
+      "257d2150-9c36-4937-8893-9e99ea931551",
+      "6b62a7fe-236c-47e8-a2c4-935f9628f8fd",
+      "fc50f683-e237-4f2f-a4e4-3d4d09abb97a"
+    ]   
+  },
+    {
+    "query": "projekti modernih zgrada u Beogradu",
+    "lang": "sr",
+    "relevant_ids": [
+      "15b1b998-f9eb-4eeb-be1f-c68e49d08fda",
+      "3d48bff8-1637-481c-80d8-b0acf49bed65",
+      "668c9043-5723-47f8-be75-055c5172dc8a",
+      "806ef455-2800-45c8-87ca-f4c815339cf8",
+      "aa560c64-d7a0-4cab-97a9-d52cc5a6236b",
+      "b3bf8cf1-4f95-4d0b-b2dd-094ad1dfcee0",
+      "e0dccb91-d717-4d0c-a75e-e1a1363805b4"
+    ]   
   }
 ]
+
+

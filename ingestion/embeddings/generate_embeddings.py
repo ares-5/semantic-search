@@ -18,7 +18,7 @@ dst_emb_sr = "/kaggle/working/embeddings_sr_final.npy"
 
 CHECKPOINT_FILE = "/kaggle/working/checkpoint.json"
 BATCH_SIZE_DOCS = 64
-ENCODE_BATCH_SIZE = 128       # bigger batch for GPU
+ENCODE_BATCH_SIZE = 128
 MAX_TOKENS = 512
 MAX_SENTENCES = 20
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -43,7 +43,6 @@ def split_text_to_blocks(text, lang='en'):
     cur = ""
     for s in sentences:
         candidate = (cur + " " + s).strip() if cur else s
-        # approximate token count
         token_count = len(candidate.split())
         if token_count > MAX_TOKENS:
             if cur: blocks.append(cur)
@@ -82,6 +81,7 @@ def encode_documents(model, doc_blocks, encode_batch_size=ENCODE_BATCH_SIZE):
     idx = 0
     for cnt in block_counts:
         if cnt==0:
+            # no blocks, return zero vector
             embeddings.append(np.zeros(all_embs.shape[1], dtype=np.float32))
         else:
             doc_emb = np.mean(all_embs[idx:idx+cnt], axis=0)
@@ -116,10 +116,13 @@ for i in range(start_idx, n_docs, BATCH_SIZE_DOCS):
     batch_texts_sr = (df["title_sr"] + " " + df["abstract_sr"]).tolist()[i:i+BATCH_SIZE_DOCS]
 
     t0 = time.perf_counter()
+
     blocks_en = preprocess_documents(batch_texts_en, lang='en')
     blocks_sr = preprocess_documents(batch_texts_sr, lang='sr')
+
     batch_emb_en = encode_documents(model_en, blocks_en)
     batch_emb_sr = encode_documents(model_sr, blocks_sr)
+
     t1 = time.perf_counter()
 
     emb_en = np.vstack([emb_en, batch_emb_en])

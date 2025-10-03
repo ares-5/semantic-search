@@ -1,3 +1,9 @@
+The training uses Multiple Negatives Ranking Loss, which teaches the model to bring query–positive passage 
+pairs closer in the embedding space while pushing away negatives. 
+For each query, the positive passage is its ground-truth match, and all other passages in the batch act as negatives.
+The loss is computed with cross-entropy over the similarity scores, encouraging the diagonal (true pairs) to be
+much higher than the off-diagonal (false pairs). A lower loss means the model is better at distinguishing correct matches from incorrect ones.
+
 Stage pairs after splitting blocks and deduplication: 84703
 Starting Stage 2 training with block-split abstracts on fresh model...
  [3913/3972 2:11:53 < 01:59, 0.49 it/s, Epoch 2.95/3]

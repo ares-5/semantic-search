@@ -13,11 +13,13 @@ dizajniranja simulatora računarske arhitekture i organizacije
 
 *** testosterone level decrease with aging influencing cvd and ami
 *** insulin affect on diabetes
+*** diabetes effect on body
 
 *** student eating disorders - example where BM25 with reranked helps out in finding the right results
-*********** Eating issues among college students - example where semantic search shines
+*********** Eating issues among college students
 
 walking of subjects after stroke
+walking of subjects after stroke or heart attack
 spine disease
 
 

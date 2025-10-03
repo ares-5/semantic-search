@@ -4,6 +4,8 @@ ingestion/models
 ingestion/training/en/generated_queries.tsv
 
 ingestion/training/sr/generated_queries_synthetic_sr.tsv
+ingestion/training/en/queries
+ingestion/training/sr/queries
 
 ingestion/models.zip
 

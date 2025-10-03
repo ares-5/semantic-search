@@ -20,7 +20,8 @@
             (click)="onClick(phd._id)">
             {{ getLocalizedTitle(phd) }}
           </h2>
-          <p class="text-gray-700 line-clamp-5">
+          <p class="cursor-pointer text-gray-700 line-clamp-5"
+            (click)="onClick(phd._id)">
             {{ getLocalizedDetails(phd) }}
           </p>
         </div>

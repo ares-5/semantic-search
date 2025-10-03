@@ -14,16 +14,14 @@ export class SearchService {
   search(
     query: string,
     lang: 'en' | 'sr' = 'en',
-    mode: SearchMode = SearchMode.RERANKED,
+    mode: SearchMode = SearchMode.SEMANTIC,
     size: number = 10,
-    candidate_pool: number = 400,
+    candidate_pool: number = 300,
     alpha: number = 0.65
   ): Observable<PhDDissertation[]> {
-    const encodedQuery = encodeURIComponent(query);
-
     return this.httpClient.get<PhDDissertation[]>(`${this.apiUrl}/search`, {
       params: {
-        query: encodedQuery,
+        query: query,
         mode,
         lang,
         size: size.toString(),

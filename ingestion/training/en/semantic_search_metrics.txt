@@ -1,9 +1,0 @@
-=== RESULTS ===
-Titles as queries:
-Recall@1: 0.7011, Recall@5: 0.8177, Recall@10: 0.8391, MRR: 0.7542
-
-Abstract snippets as queries:
-Recall@1: 0.5304, Recall@5: 0.6809, Recall@10: 0.7251, MRR: 0.6006
-
-16GB GPU, limiting batch size and model size.
-Stage 2 training (block splitting, deduplication, caching) — which already pushes efficiency.

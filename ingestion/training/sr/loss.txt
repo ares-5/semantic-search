@@ -1,3 +1,9 @@
+The training uses Multiple Negatives Ranking Loss, which teaches the model to bring query–positive passage 
+pairs closer in the embedding space while pushing away negatives. 
+For each query, the positive passage is its ground-truth match, and all other passages in the batch act as negatives.
+The loss is computed with cross-entropy over the similarity scores, encouraging the diagonal (true pairs) to be
+much higher than the off-diagonal (false pairs). A lower loss means the model is better at distinguishing correct matches from incorrect ones.
+
 Starting BERTIC SR training with query → abstract blocks...
  [1461/1461 1:06:55, Epoch 3/3]
 Step	Training Loss

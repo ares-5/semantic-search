@@ -1,0 +1,84 @@
+Query: walking of subjects after stroke or heart attack
+  bm25      -> P@10=0.30, R@10=0.43, nDCG@10=0.51
+  semantic  -> P@10=0.40, R@10=0.57, nDCG@10=0.68
+  hybrid    -> P@10=0.40, R@10=0.57, nDCG@10=0.68
+  reranked  -> P@10=0.60, R@10=0.86, nDCG@10=0.89
+
+Query: genetic mutations associated with cancer progression
+  bm25      -> P@10=0.50, R@10=0.56, nDCG@10=0.62
+  semantic  -> P@10=0.20, R@10=0.22, nDCG@10=0.17
+  hybrid    -> P@10=0.40, R@10=0.44, nDCG@10=0.34
+  reranked  -> P@10=0.90, R@10=1.00, nDCG@10=1.00
+
+Query: designs of modern buildings in belgrade
+  bm25      -> P@10=0.30, R@10=0.43, nDCG@10=0.34
+  semantic  -> P@10=0.40, R@10=0.57, nDCG@10=0.50
+  hybrid    -> P@10=0.50, R@10=0.71, nDCG@10=0.52
+  reranked  -> P@10=0.70, R@10=1.00, nDCG@10=0.76
+
+### Query: walking of subjects after stroke or heart attack
+
+BM25 (lexical search):
+- P@10 = 0.30 → 3 out of 10 results were relevant.
+- R@10 = 0.43 → Retrieved 43% of all relevant documents.
+- nDCG@10 = 0.51 → Ranking quality is moderate; relevant docs not always at the top.
+
+Semantic search:
+- P@10 = 0.40 → 4 out of 10 were relevant (better than BM25).
+- R@10 = 0.57 → Retrieved more relevant docs than BM25.
+- nDCG@10 = 0.68 → Relevant results ranked higher than in BM25.
+
+Hybrid (semantic + BM25 blend):
+- P@10 = 0.40, R@10 = 0.57, nDCG@10 = 0.68 → Identical to semantic; fusion didn’t add value here.
+
+Reranked (semantic candidates reranked with cross-encoder):
+- P@10 = 0.60 → 6 out of 10 were relevant, a big jump in quality.
+- R@10 = 0.86 → Almost all relevant documents captured.
+- nDCG@10 = 0.89 → Very strong ranking; relevant docs are near the top.
+
+
+### Query: genetic mutations associated with cancer progression
+
+BM25 (lexical search):
+- P@10 = 0.50 → 5 out of 10 were relevant, decent baseline.
+- R@10 = 0.56 → Retrieved just over half of all relevant docs.
+- nDCG@10 = 0.62 → Relevant docs appear but not perfectly ranked.
+
+Semantic search:
+- P@10 = 0.20 → Only 2 out of 10 relevant.
+- R@10 = 0.22 → Very poor coverage.
+- nDCG@10 = 0.17 → Ranking collapsed; relevant docs buried.
+
+Hybrid (semantic + BM25 blend):
+- P@10 = 0.40, R@10 = 0.44, nDCG@10 = 0.34 → Somewhat better than semantic alone but still worse than BM25.
+
+Reranked (semantic candidates reranked with cross-encoder):
+- P@10 = 0.90 → 9 out of 10 relevant.
+- R@10 = 1.00 → Retrieved all relevant documents.
+- nDCG@10 = 1.00 → Perfect ranking: all relevant docs at the very top.
+
+*** While semantic embeddings alone failed to rank relevant biomedical documents highly,
+using a cross-encoder to rerank BM25/semantic candidates rescued these relevant results, 
+demonstrating the practical benefit of a multi-stage retrieval pipeline.
+***
+
+
+### Query: designs of modern buildings in Belgrade
+
+BM25 (lexical search):
+- P@10 = 0.30 → 3 out of 10 were relevant.
+- R@10 = 0.43 → Found less than half of relevant docs.
+- nDCG@10 = 0.34 → Relevant docs ranked low.
+
+Semantic search:
+- P@10 = 0.40 → 4 out of 10 relevant.
+- R@10 = 0.57 → More coverage than BM25.
+- nDCG@10 = 0.50 → Better ranking quality; relevant results appear higher.
+
+Hybrid (semantic + BM25 blend):
+- P@10 = 0.50, R@10 = 0.71, nDCG@10 = 0.52 → Combination of BM25 + semantic improves both precision and recall.
+
+Reranked (semantic candidates reranked with cross-encoder):
+- P@10 = 0.70 → 7 out of 10 relevant.
+- R@10 = 1.00 → Found all relevant docs.
+- nDCG@10 = 0.76 → Relevant docs consistently at the top.

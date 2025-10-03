@@ -3,10 +3,10 @@ import numpy as np
 from elasticsearch import Elasticsearch
 import os
 
-from backend import config
-from backend.services import elastic_search_service
+import config
+from services import elastic_search_service
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # folder gde je evaluate.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 json_path = os.path.join(BASE_DIR, "search_queries.json")
 
 with open(json_path, "r", encoding="utf-8") as f:
@@ -77,7 +77,6 @@ for entry in search_queries:
     }
     results.append(metrics)
 
-# Ispiši pregledno
 for r in results:
     print(f"\nQuery: {r['query']}")
     for method in ["bm25", "semantic", "hybrid", "reranked"]:
