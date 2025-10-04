@@ -87,7 +87,7 @@ def reranked_search(query: str, lang: str, size: int, candidate_pool: int, alpha
                   for doc in res_batch['docs'] if doc['found']]
 
     query_doc_pairs = [(query, doc_text) for _, doc_text in candidates]
-    scores = reranker.predict(query_doc_pairs, batch_size=64)
+    scores = reranker.predict(query_doc_pairs, batch_size=32)
 
     reranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
     return [(cid, doc_text, score) for ((cid, doc_text), score) in reranked[:size]]
