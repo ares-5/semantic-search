@@ -17,12 +17,81 @@ es = Elasticsearch(config.ES_HOST)
 
 # Metric helpers
 def precision_at_k(pred_ids, gold_ids, k):
+    """
+    Precision@K (P@K)
+
+    Definicija:
+        Mera preciznosti u top-K rezultata pretrage.
+        Pokazuje koliki deo dokumenata u prvih K koje model vrati
+        zapravo jeste relevantan.
+
+    Formula:
+        P@K = (broj relevantnih dokumenata u top-K) / K
+
+    Parametri:
+        pred_ids (list): Lista ID-jeva dokumenata koje je sistem vratio, poređani po rangiranju.
+        gold_ids (list): Lista stvarno relevantnih dokumenata (ground truth).
+        k (int): Broj top rezultata koje posmatramo.
+
+    Vraća:
+        float: Preciznost u intervalu [0, 1].
+
+    Primer:
+        Ako je K=10 i 6 od prvih 10 dokumenata relevantno → P@10 = 0.6
+    """
     return len(set(pred_ids[:k]) & set(gold_ids)) / k
 
 def recall_at_k(pred_ids, gold_ids, k):
+    """
+    Recall@K (R@K)
+
+    Definicija:
+        Mera pokrivenosti relevantnih dokumenata u top-K rezultata.
+        Pokazuje koliki deo svih relevantnih dokumenata je sistem uspeo da pronađe.
+
+    Formula:
+        R@K = (broj relevantnih dokumenata u top-K) / (ukupan broj relevantnih dokumenata)
+
+    Parametri:
+        pred_ids (list): Lista ID-jeva dokumenata koje je sistem vratio.
+        gold_ids (list): Lista stvarno relevantnih dokumenata.
+        k (int): Broj top rezultata koje posmatramo.
+
+    Vraća:
+        float: Recall u intervalu [0, 1].
+
+    Primer:
+        Ako postoji ukupno 7 relevantnih dokumenata, a model je u top-10 pronašao 6 → R@10 = 6/7 ≈ 0.86
+    """
     return len(set(pred_ids[:k]) & set(gold_ids)) / len(gold_ids) if gold_ids else 0
 
 def ndcg_at_k(pred_ids, gold_ids, k):
+    """
+    Normalized Discounted Cumulative Gain (nDCG@K)
+
+    Definicija:
+        Mera kvaliteta rangiranja rezultata.
+        Ne gleda samo da li su dokumenti relevantni, već i na kojoj su poziciji.
+        Relevantni dokumenti bliže vrhu liste doprinose više nego oni na dnu.
+
+    Formula:
+        DCG = Σ (rel_i / log2(i+2)),  i = pozicija dokumenta u listi
+        IDCG = maksimalni mogući DCG ako su svi relevantni na vrhu
+        nDCG = DCG / IDCG
+
+    Parametri:
+        pred_ids (list): Lista ID-jeva dokumenata koje je sistem vratio.
+        gold_ids (list): Lista stvarno relevantnih dokumenata.
+        k (int): Broj top rezultata koje posmatramo.
+
+    Vraća:
+        float: nDCG vrednost u intervalu [0, 1].
+               1 znači savršeno rangiranje (svi relevantni na vrhu),
+               0 znači nijedan relevantan u top-K.
+
+    Primer:
+        Ako su relevantni dokumenti raspoređeni visoko u listi, nDCG@10 može biti npr. 0.89.
+    """
     dcg = 0.0
     for i, pid in enumerate(pred_ids[:k]):
         if pid in gold_ids:

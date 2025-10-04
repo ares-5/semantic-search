@@ -46,7 +46,7 @@ def semantic_search(query: str, lang: str, size: int, candidate_pool: float):
         "knn": {
             "field": "embedding",
             "query_vector": embedding,
-            "k": candidate_pool,
+            "k": size,
             "num_candidates": candidate_pool
         }
     }
@@ -70,7 +70,7 @@ def hybrid_search(query: str, lang: str, size: int, candidate_pool: int, alpha: 
     for pid in set(bm25_scores.keys()).union(sem_scores.keys()):
         b = bm25_norm.get(pid, 0)
         s = sem_norm.get(pid, 0)
-        scores[pid] = (1-alpha)*b + alpha*s
+        scores[pid] = (1 - alpha) * b + alpha * s
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:size]
     return [pid for pid, _ in ranked]
@@ -82,14 +82,12 @@ def reranked_search(query: str, lang: str, size: int, candidate_pool: int, alpha
     """
     candidate_ids = hybrid_search(query, lang, size=candidate_pool, candidate_pool=candidate_pool, alpha=alpha)
 
-    candidates = []
-    for cid in candidate_ids:
-        res = es.get(index=f"phd_dissertations_{lang}", id=cid)
-        doc_text = f"{res['_source']['title']} {res['_source']['details']}"
-        candidates.append((cid, doc_text))
+    res_batch = es.mget(index=f"phd_dissertations_{lang}", ids=candidate_ids)
+    candidates = [(doc['_id'], f"{doc['_source']['title']} {doc['_source']['details']}") 
+                  for doc in res_batch['docs'] if doc['found']]
 
     query_doc_pairs = [(query, doc_text) for _, doc_text in candidates]
-    scores = reranker.predict(query_doc_pairs)
+    scores = reranker.predict(query_doc_pairs, batch_size=64)
 
     reranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
     return [(cid, doc_text, score) for ((cid, doc_text), score) in reranked[:size]]

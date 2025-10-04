@@ -14,7 +14,7 @@ export class SearchService {
   search(
     query: string,
     lang: 'en' | 'sr' = 'en',
-    mode: SearchMode = SearchMode.SEMANTIC,
+    mode: SearchMode = SearchMode.RERANKED,
     size: number = 10,
     candidate_pool: number = 300,
     alpha: number = 0.65

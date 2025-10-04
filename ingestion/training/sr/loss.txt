@@ -34,3 +34,14 @@ Step	Training Loss
 400	0.249700
 500	0.192800
 600	0.134500
+
+
+Starting BERTIC SR training with query → abstract blocks...
+ [696/696 1:09:15, Epoch 3/3]
+Step	Training Loss
+100	0.172200
+200	0.177100
+300	0.125300
+400	0.098600
+500	0.090800
+600	0.065900
