@@ -2,12 +2,12 @@
   <app-search-bar (search)="onSearch($event)"></app-search-bar>
 
   @if (loading) {
-    <div class="text-center py-6 text-gray-500 text-lg">Loading...</div>
+    <div class="text-center py-6 text-gray-500 text-lg">{{ getLocalizedLoadingMessage() }}</div>
   }
 
   @if (!loading && phdDissertations().length === 0) {
     <div class="text-center py-6 text-gray-500 text-lg">
-      No results found.
+      {{ getLocalizedNoResultMessage() }}
     </div>
   }
 

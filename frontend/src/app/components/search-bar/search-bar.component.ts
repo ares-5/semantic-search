@@ -15,12 +15,18 @@ export class SearchBarComponent {
   query: string = '';
   @Output() search = new EventEmitter<string>();
 
+  get locale() {
+    return this.localeService.locale();
+  }
+
   get placeholder(): string {
-    return this.localeService.locale() === 'sr' ? 'Pretraži proizvode...' : 'Search products...';
+    const lang = this.locale as 'en' | 'sr';
+    return lang === 'sr' ? 'Pretraži proizvode...' : 'Search products...';
   }
 
   get searchText(): string {
-    return this.localeService.locale() === 'sr' ? 'Pretraži' : 'Search';
+    const lang = this.locale as 'en' | 'sr';
+    return lang === 'sr' ? 'Pretraži' : 'Search';
   }
 
   onSearch() {

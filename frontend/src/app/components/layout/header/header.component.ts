@@ -11,9 +11,18 @@ export class HeaderComponent {
   public localeService: LocaleService = inject(LocaleService);
   private router: Router = inject(Router);
 
-  changeLocale(event: Event) {
+  getLocalizedAppName(): string {
+    const lang = this.locale as 'en' | 'sr';
+    return lang === 'en' ? 'PhD dissertations' : 'Doktorske disertacije';
+  }
+
+  changeLocale(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.localeService.setLocale(select.value as 'en' | 'sr');
+  }
+
+  get locale() {
+    return this.localeService.locale();
   }
 
   goHome() {

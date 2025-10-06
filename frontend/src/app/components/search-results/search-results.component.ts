@@ -44,6 +44,16 @@ export class SearchResultsComponent {
     return phd.details[lang] ?? '';
   }
 
+  getLocalizedLoadingMessage(): string {
+    const lang = this.locale as 'en' | 'sr';
+    return lang === 'en' ? 'Loading...' : 'Učitavanje...'
+  }
+
+  getLocalizedNoResultMessage(): string {
+    const lang = this.locale as 'en' | 'sr';
+    return lang === 'en' ? 'No results found for given criteria.' : 'Nisu pronađeni rezultati za dati unos.'
+  }
+
   onSearch(query: string) {
     this.loading = true;
     this.router.navigate([], { queryParams: { q: query } });
