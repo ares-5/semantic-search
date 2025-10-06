@@ -5,7 +5,7 @@ from sentence_transformers import CrossEncoder, SentenceTransformer
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L12-v2", device=device)
+reranker = CrossEncoder("models/cross_encoder_ms_marco_MiniLM-L12-v2", device=device)
 
 model_en = SentenceTransformer(config.EN_MODEL_PATH, local_files_only=True)
 model_sr = SentenceTransformer(config.SR_MODEL_PATH, local_files_only=True)
