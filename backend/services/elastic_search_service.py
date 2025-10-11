@@ -43,6 +43,7 @@ def standard_search(query: str, lang: str, size: int):
 def semantic_search(query: str, lang: str, size: int, candidate_pool: float):
     embedding = get_embedding(query, lang)
     body = {
+        "size": size,
         "knn": {
             "field": "embedding",
             "query_vector": embedding,
@@ -91,6 +92,9 @@ def reranked_search(query: str, lang: str, size: int, candidate_pool: int, alpha
 
     reranked = sorted(zip(candidates, scores), key=lambda x: x[1], reverse=True)
     return [(cid, doc_text, score) for ((cid, doc_text), score) in reranked[:size]]
+
+def rerank_pairs(query_doc_pairs, batch_size=32):
+    return reranker.predict(query_doc_pairs, batch_size=batch_size)
 
 def index_count(lang: str, vector: bool = False) -> int:
     """Returns number of documents in ES index."""
