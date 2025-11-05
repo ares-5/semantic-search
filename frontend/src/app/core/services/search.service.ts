@@ -15,8 +15,8 @@ export class SearchService {
     query: string,
     lang: 'en' | 'sr' = 'en',
     mode: SearchMode = SearchMode.RERANKED,
-    size: number = 10,
-    candidate_pool: number = 300,
+    size: number = 15,
+    candidate_pool: number = 200,
     alpha: number = 0.65
   ): Observable<PhDDissertation[]> {
     return this.httpClient.get<PhDDissertation[]>(`${this.apiUrl}/search`, {

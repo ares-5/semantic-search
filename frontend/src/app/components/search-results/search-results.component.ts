@@ -4,6 +4,7 @@ import { SearchService } from '../../core/services/search.service';
 import { LocaleService } from '../../core/services/locale.service';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SearchMode } from '../../core/models/search-mode';
 
 @Component({
   selector: 'app-search-results',
@@ -21,8 +22,12 @@ export class SearchResultsComponent {
   phdDissertations: WritableSignal<PhDDissertation[]> = signal([]);
   loading = false;
 
-  get locale() {
+  get locale(): 'en' | 'sr' {
     return this.localeService.locale();
+  }
+
+  get searchMode(): SearchMode {
+    return this.localeService.searchMode();
   }
 
   ngOnInit() {
@@ -59,7 +64,7 @@ export class SearchResultsComponent {
     this.router.navigate([], { queryParams: { q: query } });
     const lang = this.locale as 'en' | 'sr';
 
-    this.searchService.search(query, lang).subscribe({
+    this.searchService.search(query, lang, this.searchMode).subscribe({
       next: (res) => {
         this.phdDissertations.set(res);
         this.loading = false;

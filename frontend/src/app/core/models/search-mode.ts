@@ -1,6 +1,6 @@
 export enum SearchMode {
-    STANDARD = "standard",
-    SEMANTIC = "semantic",
-    HYBRID = "hybrid",
-    RERANKED = "reranked"
+  STANDARD = "standard",
+  SEMANTIC = "semantic",
+  HYBRID = "hybrid",
+  RERANKED = "reranked"
 }
